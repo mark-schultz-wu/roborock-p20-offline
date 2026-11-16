@@ -1,0 +1,67 @@
+# config.toml for the local_roborock_server stack — this project's shape.
+#
+# Don't hand-craft the secrets: run the upstream wizard first (it writes
+# config.toml, generates admin.password_hash/session_secret and the
+# protocol-login PIN hash):
+#
+#     uv run roborock-local-server configure
+#
+# then apply the deltas that this project needs (marked DELTA below):
+#   [network] stack_fqdn — a portable label (not a registered domain); the
+#     same name as STACK_HOST in lab.env and in the /etc/hosts line.
+#   [tls] mode = "provided" — the forged chain minted by apicn/mint_leaf.py
+#     (no ACME, no Cloudflare, no renewal job); cert files at
+#     data/certs/fullchain.pem + privkey.pem in the clone.
+#   [turn] mode = "provided", host = your AP_IP (lab.env).
+#   [network] ports must match STACK_PORT / MQTT_PORT in lab.env.
+# Everything below mirrors a working install; CHANGE_ME marks secrets to
+# take from your wizard-written config.toml (or generate your own).
+
+[network]
+stack_fqdn = "api-rr.roborock.lab"
+bind_host = "0.0.0.0"
+https_port = 555          # DELTA: keep in sync with STACK_PORT (lab.env)
+mqtt_tls_port = 8881       # DELTA: keep in sync with MQTT_PORT (lab.env)
+region = "cn"
+
+[broker]
+mode = "embedded"
+host = "127.0.0.1"
+port = 18830
+mosquitto_binary = "mosquitto"
+enable_topic_bridge = true
+
+[storage]
+data_dir = "/data"
+
+[logging]
+max_size_mb = 50
+backup_count = 10
+
+[tls]
+# DELTA: provided, not cloudflare_acme — the vacuum's frozen factory trust
+# store only accepts the old chain this project mints itself.
+mode = "provided"
+cert_file = "/data/certs/fullchain.pem"
+key_file = "/data/certs/privkey.pem"
+# Mint + deploy: `uv run apicn/mint_leaf.py` (SANs from lab.env), then in
+# this clone: cp ../apicn/leaf-chain.pem data/certs/fullchain.pem
+#           cp ../apicn/leaf.key      data/certs/privkey.pem
+
+[admin]
+password_hash = "CHANGE_ME"   # from the wizard output
+session_secret = "CHANGE_ME"  # from the wizard output
+session_ttl_seconds = 86400
+protocol_auth_enabled = true
+new_connections_enabled = true
+protocol_login_email = "roborock@roborock.lab"   # PROTOCOL_EMAIL in lab.env
+protocol_login_pin_hash = "CHANGE_ME"            # hash of PROTOCOL_PIN
+
+[turn]
+mode = "provided"             # DELTA: camera relay served by the stack itself
+host = "192.168.77.1"         # DELTA: your AP_IP (lab.env)
+port = 3478
+username = "rrturn"
+password = "CHANGE_ME"        # any secret; goes into the createca replies
+realm = "roborock.lab"
+ttl = 86400

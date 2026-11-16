@@ -1,0 +1,133 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0f766e">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Vacuum">
+<title>Vacuum</title>
+<link rel="manifest" href="/static/manifest.json">
+<link rel="icon" href="/static/icon.svg" type="image/svg+xml">
+<link rel="apple-touch-icon" href="/static/icon.svg">
+<link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<header class="top">
+  <h1>Vacuum</h1>
+  <span id="conn" class="conn" title="connection">connecting…</span>
+</header>
+
+<main>
+  <div id="banner" class="banner hidden" role="alert"></div>
+  <!-- HOME -->
+  <section id="tab-home" class="tab active">
+
+    <div class="card status">
+      <div class="state-row">
+        <div>
+          <div id="state" class="state">…</div>
+          <div id="where" class="sub"></div>
+        </div>
+        <div class="battery" id="battery" aria-label="battery">
+          <div class="battery-fill" id="battery-fill"></div>
+          <span id="battery-text">–</span>
+        </div>
+      </div>
+      <div id="run" class="sub run"></div>
+      <div id="modes" class="chips"></div>
+    </div>
+
+    <div id="job" class="card job hidden">
+      <div class="job-head"><span id="job-label"></span><span id="job-result" class="pill"></span></div>
+      <ol id="job-steps" class="steps"></ol>
+      <div id="job-message" class="sub"></div>
+    </div>
+
+    <div class="actions">
+      <button id="btn-main" class="big primary">Clean everywhere</button>
+      <button id="btn-stop" class="big">Stop</button>
+      <button id="btn-dock" class="big">Dock</button>
+      <button id="btn-map" class="big ghost">Pick rooms on the map →</button>
+    </div>
+
+    <h2>Dock</h2>
+    <div class="actions three">
+      <button data-action="empty">Empty bin</button>
+      <button data-action="wash">Wash mop</button>
+      <button id="btn-dry">Dryer on</button>
+    </div>
+  </section>
+
+  <!-- MAP -->
+  <section id="tab-map" class="tab">
+    <div class="seg" role="tablist">
+      <button id="tool-rooms" class="on">Rooms</button>
+      <button id="tool-zone">Zone</button>
+    </div>
+    <p id="map-hint" class="hint">Tap rooms to pick them, on the map or here.</p>
+    <div id="room-chips" class="chips room-chips"></div>
+    <div id="map-wrap" class="map-wrap">
+      <img id="map-img" alt="map of the home" draggable="false">
+      <canvas id="map-overlay"></canvas>
+      <div id="map-loading" class="map-loading">Loading map…</div>
+    </div>
+
+    <div id="sheet" class="sheet">
+      <div id="sheet-title" class="sheet-title"></div>
+      <div class="sheet-row">
+        <label>Passes
+          <span class="stepper">
+            <button id="rep-minus" aria-label="fewer passes">−</button>
+            <span id="rep">1</span>
+            <button id="rep-plus" aria-label="more passes">+</button>
+          </span>
+        </label>
+        <button id="mode-toggle" class="link">Modes ▾</button>
+      </div>
+      <div id="mode-pickers" class="mode-pickers hidden">
+        <label>Suction <select id="m-suction"></select></label>
+        <label>Water <select id="m-water"></select></label>
+        <label>Route <select id="m-route"></select></label>
+      </div>
+      <div class="sheet-row">
+        <button id="sheet-rename" class="ghost hidden">Rename</button>
+        <button id="sheet-clear" class="ghost">Clear</button>
+        <button id="sheet-go" class="primary">Clean</button>
+      </div>
+    </div>
+  </section>
+
+  <!-- CAMERA -->
+  <section id="tab-camera" class="tab">
+    <div id="cam-wrap" class="cam-wrap">
+      <video id="cam" muted playsinline autoplay></video>
+      <div id="cam-msg" class="map-loading">Starting camera…</div>
+    </div>
+    <p class="hint">Live from the robot. The stream runs only while this tab is open, and viewing is noted in Activity.</p>
+  </section>
+
+  <!-- ACTIVITY -->
+  <section id="tab-activity" class="tab">
+    <ul id="activity" class="activity"></ul>
+  </section>
+</main>
+
+<nav class="tabs">
+  <button data-tab="home" class="on">Home</button>
+  <button data-tab="map">Map</button>
+  <button data-tab="camera">Camera</button>
+  <button data-tab="activity">Activity</button>
+</nav>
+
+<dialog id="rename">
+  <form method="dialog">
+    <label>Room name <input id="rename-input" maxlength="40" required autocomplete="off"></label>
+    <menu><button value="cancel" formnovalidate>Cancel</button><button value="ok" class="primary">Save</button></menu>
+  </form>
+</dialog>
+
+<div id="toast" class="toast hidden"></div>
+<script src="/static/app.js"></script>
+</body>
+</html>

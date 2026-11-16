@@ -1,0 +1,26 @@
+# go2rtc config for the camera live view — copy to .tools/go2rtc.yaml and
+# fill in. Gitignored once real: the source URL holds rriot credentials.
+#
+# Values for the roborock:// URL (they rotate on every re-onboarding):
+#   host   STACK_HOST:MQTT_PORT from lab.env
+#   u/s/k  the "rriot" block of .cloud_session.json (written by the
+#          provisioning/login flow; tests/check_local.py `go2rtc_creds`
+#          catches staleness)
+#   did    VACUUM_DUID, key VACUUM_KEY from lab.env
+#   pin    the remote-view PIN you set on the robot
+#          (set_homesec_password — README "Camera live view")
+api:
+  listen: "127.0.0.1:1984"
+rtsp:
+  listen: "127.0.0.1:8554"
+webrtc:
+  listen: "127.0.0.1:8555"
+
+streams:
+  a184:
+    - roborock://api-rr.roborock.lab:8881?u=CHANGE_ME&s=CHANGE_ME&k=CHANGE_ME&did=CHANGE_ME&key=CHANGE_ME&pin=CHANGE_ME
+  # For the web page (MSE): the robot's H.264 mixes in slices of a second,
+  # 128x96 stream whose parameter set it never sends; MSE players (Safari)
+  # fail on it. Re-encode to one clean 960x540 stream.
+  a184_web:
+    - ffmpeg:a184#video=h264#width=960#height=540

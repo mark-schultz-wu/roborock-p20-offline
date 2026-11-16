@@ -1,0 +1,13 @@
+[Unit]
+Description=Roborock rrcheck check: daily after the expected renewal; once past the 48 h mark
+
+[Timer]
+# Daily, ~1 h after the robot's expected ~17:16 renewal (the checker reads
+# the renewal history from the logs, so drift is fine)
+OnCalendar=*-*-* 18:13
+# The 48 h verdict: onboarded 29 Oct 22:43, so 31 Oct 23:47
+OnCalendar=2026-10-31 23:47
+Persistent=true
+
+[Install]
+WantedBy=timers.target

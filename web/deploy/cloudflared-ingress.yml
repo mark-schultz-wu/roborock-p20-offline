@@ -1,0 +1,8 @@
+# Example ingress entry for your cloudflared tunnel config (the ingress
+# list lives wherever your cloudflared runs it). Add above the final
+# `- service: http_status:404`, ONLY after the Cloudflare Access
+# application for the vacuum hostname exists. Then add the DNS route and
+# restart cloudflared. Full go-live steps: docs/WEB.md.
+  # Vacuum (via nginx; see nginx-vacuum.conf)
+  - hostname: vacuum.example.com
+    service: http://localhost:8080

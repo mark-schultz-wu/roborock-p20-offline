@@ -1,0 +1,21 @@
+# systemd user unit: ~/.config/systemd/user/vacuum-web.service
+#   1. Adjust the two paths below to where this repo and uv live
+#      (WorkingDirectory = the repo root; `which uv` for ExecStart).
+#   2. Set CF_ACCESS_TEAM and CF_ACCESS_AUD from your Cloudflare Zero Trust
+#      (Access → Applications → vacuum → Overview → Application Audience Tag).
+#      Without both, the server trusts any request: never expose it like that.
+#   3. systemctl --user daemon-reload && systemctl --user enable --now vacuum-web
+[Unit]
+Description=Vacuum web page backend (roborock/web/server.py)
+After=network-online.target
+
+[Service]
+WorkingDirectory=/home/YOU/path/to/roborock
+ExecStart=/home/YOU/.local/bin/uv run --quiet web/server.py
+Environment=CF_ACCESS_TEAM=your-team-name
+Environment=CF_ACCESS_AUD=your-application-audience-tag
+Restart=always
+RestartSec=5
+
+[Install]
+WantedBy=default.target

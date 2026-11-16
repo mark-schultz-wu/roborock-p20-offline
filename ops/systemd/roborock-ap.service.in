@@ -1,0 +1,36 @@
+[Unit]
+Description=Roborock: lab AP (@AP_IFACE@) and then the local stack, at boot
+Documentation=file://@REPO_DIR@/README.md
+# The AP copies the LAN interface's channel, so the LAN STA must be
+# associated first. The lockdown rules go in after Docker's own FORWARD
+# rules, and the stack binds @AP_IFACE@'s address on :443, which only
+# exists once the AP interface is up.
+Wants=network-online.target
+After=network-online.target docker.service
+Requires=docker.service
+# Keep retrying (see Restart= below); never give up after a burst of failures.
+StartLimitIntervalSec=0
+
+[Service]
+Type=oneshot
+RemainAfterExit=yes
+WorkingDirectory=@REPO_DIR@
+# Wait up to 2 min for the LAN interface to report a frequency.
+ExecStartPre=/bin/bash -c 'for i in $(seq 120); do iw dev @LAN_IFACE@ link | grep -q "freq:" && exit 0; sleep 1; done; echo "LAN not associated"; exit 1'
+ExecStart=/bin/bash @REPO_DIR@/setup_ap_concurrent.sh
+# Docker does not retry a container whose start failed at boot, so start
+# the stack here, after the AP interface has its address. --force-recreate: a
+# container Docker started by itself at boot can run without its published
+# ports, and `up -d` leaves a running container alone (2026-11-13: 29 h
+# with no 443/555/8881 after a reboot; ops/recreate-stack.sh fixed it by hand).
+ExecStartPost=/usr/bin/docker compose --project-directory @REPO_DIR@/local_roborock_server -f @REPO_DIR@/local_roborock_server/compose.yaml -f @REPO_DIR@/local_roborock_server/compose.local.yaml up -d --force-recreate
+ExecStop=/bin/bash @REPO_DIR@/teardown_ap_concurrent.sh
+TimeoutStartSec=5min
+# A slow router at boot (LAN not associated in 2 min) or a 5 GHz channel
+# fails the start; try again every minute instead of staying down until
+# someone restarts the unit.
+Restart=on-failure
+RestartSec=60
+
+[Install]
+WantedBy=multi-user.target

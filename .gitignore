@@ -1,0 +1,28 @@
+# Nested git repo (upstream clone with local patches — has its own history)
+local_roborock_server/
+
+# Secrets / session state
+.cloud_session.json
+lab.env
+
+# Derived or bulky artifacts
+jadx_out/
+tools/
+com.roborock.smart@*.apk
+__pycache__/
+*.pyc
+voice/
+logs/
+ap_logs/
+maps/
+.claude/
+
+# apicn: the minter and the public chain certs (inter-cross, aaa-root) are
+# tracked; only the minted leaf and its private key stay out of git
+apicn/leaf*.pem
+apicn/*.key
+apicn/proxy.log
+apicn/*.out
+apicn/proxy.pid
+.tools/
+web/data/

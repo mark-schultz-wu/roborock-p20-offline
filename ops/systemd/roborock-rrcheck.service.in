@@ -1,0 +1,9 @@
+[Unit]
+Description=Roborock: check commands still work and rrcheck renewals are answered
+Documentation=file://@REPO_DIR@/README.md
+
+[Service]
+Type=oneshot
+ExecStart=@REPO_DIR@/ops/rrcheck-check.sh
+Environment=PATH=%h/.local/bin:/usr/local/bin:/usr/bin:/bin
+TimeoutStartSec=5min

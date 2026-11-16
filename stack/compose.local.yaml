@@ -1,0 +1,44 @@
+# Local overlay for the local_roborock_server stack — everything the vacuum
+# talks to, in one compose project. This tracked copy is the template; the
+# live copy used on this machine lives inside the local_roborock_server
+# clone (a nested git repo, gitignored here — see README "Porting").
+#
+# Install: copy this file into your local_roborock_server clone next to its
+# compose.yaml, then provide AP_IP (docker compose reads a `.env` file in
+# the project directory, or the shell environment):
+#
+#     echo "AP_IP=$(grep ^AP_IP= ../lab.env | cut -d= -f2)" > .env
+#     docker compose -f compose.yaml -f compose.local.yaml up -d --build
+#
+# - roborock-local-server publishes, on the AP address:
+#     ${AP_IP}:443 -> :555  — the vacuum's first bootstrap calls (/region
+#       etc.) go to api-<token host>:443; the forged leaf (minted by
+#       ../apicn/mint_leaf.py) must cover every name the vacuum dials
+#     TURN UDP 3478 + 49160-49179 — the camera relay (turn.mode = provided)
+# - go2rtc: camera live-view viewer and the standard consumer surface:
+#   Web UI / HTTP API :1984, RTSP :8554, WebRTC :8555 (stream a184), all
+#   bound to 127.0.0.1. Config: ../.tools/go2rtc.yaml from
+#   stack/go2rtc.example.yaml (gitignored once filled in — it holds rriot
+#   credentials).
+services:
+  roborock-local-server:
+    ports:
+      - "${AP_IP}:443:555/tcp"
+      - "${ROBOROCK_SERVER_TURN_PORT:-3478}:${ROBOROCK_SERVER_TURN_PORT:-3478}/udp"
+      - "49160-49179:49160-49179/udp"
+
+  go2rtc:
+    image: alexxit/go2rtc:latest
+    network_mode: host
+    restart: unless-stopped
+    environment:
+      # Pin the stack's leaf as the trust anchor: this container dials nothing
+      # else, and Go (>=1.18) rejects the chain's SHA-1-signed 2004 root that
+      # OpenSSL/Python accept. Re-minting the leaf (apicn/mint_leaf.py) means
+      # updating this mount + a restart.
+      - SSL_CERT_FILE=/etc/ssl/extra/leaf.pem
+    volumes:
+      - ../.tools/go2rtc.yaml:/config/go2rtc.yaml:ro
+      - ../apicn/leaf.pem:/etc/ssl/extra/leaf.pem:ro
+    depends_on:
+      - roborock-local-server
